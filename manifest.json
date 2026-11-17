@@ -1,0 +1,11 @@
+{
+  "name": "RAYFORGE: Sunstone Tactics",
+  "short_name": "Rayforge",
+  "version": "1.0.0",
+  "description": "100-level Solarpunk optical beam-reflection and 50/50 Aether Prism tactical puzzle game.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#E4E1D3",
+  "theme_color": "#253622"
+}

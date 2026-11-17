@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RAYFORGE: Sunstone Tactics</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --limestone-bg: #E4E1D3;
+      --alabaster-card: #F8F9F9;
+      --stone-taupe: #B5AEAD;
+      --forest-ink: #253622;
+      --espresso-ink: #1E1221;
+      --buttercream: #FFE392;
+      --marigold: #FCB153;
+      --tangerine: #F8650F;
+      --crimson-shadow: #AD2A18;
+      --vermilion-laser: #E5351A;
+      --sage-jade: #529574;
+      --royal-indigo: #5E4FAD;
+      --amethyst-splitter: #986BE2;
+      --cobalt-blue: #3868D5;
+      --pewter-stone: #B1C2CE;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: var(--limestone-bg);
+      color: var(--espresso-ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .font-display {
+      font-family: 'Fredoka', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tactile-card {
+      background-color: var(--alabaster-card);
+      border: 2px solid var(--forest-ink);
+      border-radius: 14px;
+      box-shadow: 0 4px 0 var(--stone-taupe);
+    }
+
+    .tactile-card-dark {
+      background-color: var(--forest-ink);
+      color: var(--alabaster-card);
+      border: 2px solid var(--espresso-ink);
+      border-radius: 14px;
+      box-shadow: 0 4px 0 #141f12;
+    }
+
+    .btn-tactile {
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+      border: 2px solid var(--espresso-ink);
+      font-family: 'Fredoka', sans-serif;
+    }
+    .btn-tactile:active {
+      transform: translateY(2px);
+    }
+
+    .btn-orange {
+      background-color: var(--tangerine);
+      color: #FFFFFF;
+      box-shadow: 0 3px 0 var(--crimson-shadow);
+    }
+    .btn-orange:hover { filter: brightness(1.06); }
+    .btn-orange:active { box-shadow: 0 1px 0 var(--crimson-shadow); }
+
+    .btn-jade {
+      background-color: var(--sage-jade);
+      color: #FFFFFF;
+      box-shadow: 0 3px 0 var(--forest-ink);
+    }
+    .btn-jade:hover { filter: brightness(1.06); }
+    .btn-jade:active { box-shadow: 0 1px 0 var(--forest-ink); }
+
+    .btn-cobalt {
+      background-color: var(--cobalt-blue);
+      color: #FFFFFF;
+      box-shadow: 0 3px 0 #1e3a8a;
+    }
+    .btn-cobalt:hover { filter: brightness(1.06); }
+    .btn-cobalt:active { box-shadow: 0 1px 0 #1e3a8a; }
+
+    .btn-indigo {
+      background-color: var(--royal-indigo);
+      color: #FFFFFF;
+      box-shadow: 0 3px 0 #312768;
+    }
+    .btn-indigo:active { box-shadow: 0 1px 0 #312768; }
+
+    .btn-cream {
+      background-color: var(--buttercream);
+      color: var(--espresso-ink);
+      box-shadow: 0 3px 0 #c99c2e;
+    }
+    .btn-cream:active { box-shadow: 0 1px 0 #c99c2e; }
+
+    .btn-stone {
+      background-color: #E4E1D3;
+      color: var(--forest-ink);
+      box-shadow: 0 3px 0 var(--stone-taupe);
+    }
+    .btn-stone:active { box-shadow: 0 0px 0 var(--stone-taupe); }
+
+    canvas {
+      touch-action: none;
+    }
+
+    /* Viewport-responsive square board sizing for 960x640 embeds AND Mobile Portrait */
+    .board-canvas-sizing {
+      width: min(100%, calc(100dvh - 150px), 440px);
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+    @media (max-width: 767px) {
+      .board-canvas-sizing {
+        width: min(92vw, calc(100dvh - 255px), 380px);
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #E4E1D3;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #B5AEAD;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="h-dvh w-screen flex flex-col overflow-hidden">
+
+  <!-- COMPACT TOP HEADER BAR (Fits 960x640 & Mobile Cleanly) -->
+  <header class="bg-[#253622] text-[#F8F9F9] border-b-2 border-[#1E1221] px-2.5 sm:px-4 py-1.5 shrink-0 z-30">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-1.5">
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-8 h-8 rounded-lg bg-[#F8650F] border-2 border-[#FFE392] flex items-center justify-center shadow font-display text-base font-bold text-white shrink-0">
+          ☀
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-display text-sm sm:text-base font-bold tracking-wide text-[#FFE392] truncate">RAYFORGE</h1>
+            <span class="hidden lg:inline-block text-[10px] font-mono-num font-bold uppercase px-2 py-0.5 rounded-full bg-[#529574] text-white">Sunstone Tactics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Mode Pills (Portal SDK hidden from players unless ?debug=1) -->
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <button id="navBtnPlay" onclick="switchTab('play')" class="btn-tactile btn-cream px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1">
+          <span>▶ Play Board</span>
+        </button>
+        <button id="navBtnLevels" onclick="switchTab('levels')" class="btn-tactile btn-stone px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1">
+          <span>🗺️ 100 Levels</span>
+        </button>
+        <button id="navBtnBuilder" onclick="switchTab('builder')" class="btn-tactile btn-stone px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1">
+          <span>🛠️ Level Builder</span>
+        </button>
+        <button id="navBtnSdk" onclick="switchTab('sdk')" class="hidden btn-tactile btn-stone px-2.5 py-1 rounded-lg text-[11px] font-bold items-center gap-1">
+          <span>💰 Portal SDK</span>
+        </button>
+      </div>
+
+      <!-- Solar Hearts (Lives), Star Counter & Audio Toggle -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <div class="px-2 py-0.5 rounded-lg bg-[#1E1221] border border-[#E5351A] flex items-center gap-1 text-[11px] font-bold" title="Solar Hearts — Hitting a Void Sinkhole Hazard costs 1 Heart!">
+          <span id="livesHeartsDisplay" class="text-[#E5351A] tracking-tight text-xs">♥♥♥</span>
+          <span id="livesCountLabel" class="font-mono-num text-[#F8F9F9] hidden sm:inline">3/3</span>
+        </div>
+        <div class="px-2 py-0.5 rounded-lg bg-[#1E1221] border border-[#FCB153] flex items-center gap-1 text-[11px] font-bold">
+          <span class="text-[#FFE392] text-xs">★</span>
+          <span id="totalStarsLabel" class="font-mono-num text-[#F8F9F9]">0 / 300</span>
+        </div>
+        <button id="btnMute" onclick="toggleSound()" class="btn-tactile btn-stone px-2 py-1 rounded-lg text-xs font-bold flex items-center" title="Toggle Tactile Sound Effects">
+          <span id="soundIcon">🔊</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT-FIT WORKSPACE -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-2 flex flex-col min-h-0 overflow-hidden">
+
+    <!-- ========================================================== -->
+    <!-- TAB 1: PLAYABLE 8x8 BOARD (Side-by-Side at md: 768px+!)    -->
+    <!-- ========================================================== -->
+    <section id="tabPlay" class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-4 items-center min-h-0 overflow-y-auto md:overflow-hidden">
+
+      <!-- Left / Center Column: Board Header + 8x8 Tactile Canvas (7 cols on md+) -->
+      <div class="md:col-span-7 flex flex-col items-center justify-center gap-2 min-h-0">
+
+        <!-- Compact Level Control Strip -->
+        <div class="tactile-card w-full max-w-[460px] px-2.5 py-1.5 flex items-center justify-between gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <button onclick="changeLevel(-1)" class="btn-tactile btn-stone px-2 py-1 rounded-lg text-[11px] font-bold" title="Previous Level">
+              ◀ Prev
+            </button>
+            <div class="px-2.5 py-0.5 rounded-lg bg-[#FFE392] border border-[#253622] flex items-center gap-1.5">
+              <span id="worldBadge" class="text-[10px] font-bold uppercase text-[#253622] hidden sm:inline">World 1</span>
+              <span class="text-[#253622] font-bold hidden sm:inline">&bull;</span>
+              <span id="levelNumberTitle" class="font-display text-xs sm:text-sm font-bold text-[#1E1221]">Level 1 / 100</span>
+            </div>
+            <button onclick="changeLevel(1)" class="btn-tactile btn-stone px-2 py-1 rounded-lg text-[11px] font-bold" title="Next Level">
+              Next ▶
+            </button>
+          </div>
+
+          <!-- Par, Moves & Sunstone Cores Readout -->
+          <div class="flex items-center gap-1 text-[11px] font-bold">
+            <div class="px-2 py-0.5 rounded bg-[#E4E1D3] border border-[#253622] text-[#253622]">
+              M: <span id="moveCounter" class="font-mono-num text-[#E5351A]">0</span>/<span id="parCounter" class="font-mono-num text-[#5E4FAD]">2</span>
+            </div>
+            <div id="shrineStatusPill" class="px-2 py-0.5 rounded bg-[#FCB153] border border-[#253622] text-[#1E1221] font-mono-num">
+              Cores: 0/1
+            </div>
+          </div>
+        </div>
+
+        <!-- 8x8 Tactile Limestone Game Board Container -->
+        <div class="relative tactile-card-dark p-2 sm:p-2.5 flex flex-col items-center justify-center w-full max-w-[460px]">
+          <canvas id="khetCanvas" width="512" height="512" class="board-canvas-sizing rounded-lg border-2 border-[#FFE392]/40 bg-[#E4E1D3] shadow-inner cursor-pointer"></canvas>
+
+          <!-- Bottom Quick-Action Bar under Board (Touch-Friendly on Mobile & Desktop) -->
+          <div class="w-full mt-2 grid grid-cols-4 gap-1.5">
+            <button onclick="rotateSelectedPiece(-1)" class="btn-tactile btn-orange py-1.5 px-1.5 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center">
+              <span>↺ Rot Left (Q)</span>
+            </button>
+            <button onclick="rotateSelectedPiece(1)" class="btn-tactile btn-orange py-1.5 px-1.5 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center">
+              <span>↻ Rot Right (R)</span>
+            </button>
+            <button onclick="undoLastMove()" class="btn-tactile btn-cobalt py-1.5 px-1.5 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center">
+              <span>↶ Undo (Z)</span>
+            </button>
+            <button onclick="resetLevel()" class="btn-tactile btn-stone py-1.5 px-1.5 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center">
+              <span>⟳ Reset</span>
+            </button>
+          </div>
+
+          <!-- LEVEL CLEARED OVERLAY MODAL (Compact so it never clips in 960x640!) -->
+          <div id="winModal" class="hidden absolute inset-0 bg-[#1E1221]/85 backdrop-blur-xs rounded-xl flex items-center justify-center p-3 z-20">
+            <div class="tactile-card max-w-sm w-full p-4 text-center space-y-2.5">
+              <div class="inline-block px-2.5 py-0.5 rounded-full bg-[#529574] text-white text-[10px] font-bold uppercase tracking-wider">
+                Sunstone Cores Ignited!
+              </div>
+              <h3 id="winModalTitle" class="font-display text-xl font-bold text-[#253622]">Level 1 Complete!</h3>
+              <div id="winStarRow" class="text-3xl tracking-widest text-[#FCB153] drop-shadow">
+                ★★★
+              </div>
+              <p id="winModalStats" class="text-xs text-[#1E1221] font-semibold">
+                Solved in 2 moves (Par: 2)
+              </p>
+              <div class="hidden" id="winSdkStatus"></div>
+              <div class="flex items-center justify-center gap-2.5 pt-1">
+                <button onclick="resetLevel()" class="btn-tactile btn-stone px-3.5 py-2 rounded-xl text-xs font-bold">
+                  Replay
+                </button>
+                <button onclick="advanceToNextLevelWithAdCheck()" class="btn-tactile btn-orange px-5 py-2 rounded-xl text-xs sm:text-sm font-bold">
+                  Next Level ▶
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUPPORTER 100-LEVEL UNLOCK MODAL (For 20-Level Free Browser Demo) -->
+          <div id="unlockEditionModal" class="hidden absolute inset-0 bg-[#1E1221]/92 backdrop-blur-xs rounded-xl flex items-center justify-center p-3 z-40">
+            <div class="tactile-card max-w-sm w-full p-4 text-center space-y-2.5 border-3 border-[#F8650F]">
+              <div class="inline-block px-2.5 py-0.5 rounded-full bg-[#F8650F] text-white text-[10px] font-bold uppercase tracking-wider">
+                🔒 Full 100-Level Edition (Levels 21–100)
+              </div>
+              <h3 class="font-display text-lg sm:text-xl font-bold text-[#253622]">Unlock Worlds 2–5!</h3>
+              <p class="text-[11px] sm:text-xs text-[#1E1221] font-medium leading-snug">
+                You are playing the <strong>Free 20-Level Browser Demo</strong> (World 1: Levels 1–20). Download the <strong>Full 100-Level Supporter Pack ($2.00)</strong> below on this page to get the offline 100-level build + your instant browser Unlock Key!
+              </p>
+              <div class="flex gap-1.5 pt-1">
+                <input id="supporterKeyInput" type="text" placeholder="Enter Key (e.g. RAYFORGE-VIP)" class="flex-1 px-2.5 py-1.5 rounded-lg bg-[#E4E1D3] border-2 border-[#253622] font-mono-num text-xs text-[#1E1221] uppercase" />
+                <button onclick="redeemSupporterKey()" class="btn-tactile btn-jade px-3 py-1.5 rounded-lg text-xs font-bold">
+                  Unlock
+                </button>
+              </div>
+              <div class="flex items-center justify-center gap-2 pt-1">
+                <button onclick="closeUnlockModal()" class="btn-tactile btn-stone px-3.5 py-1.5 rounded-lg text-xs font-bold">
+                  Keep Playing Demo (1–20)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 0 HEARTS HAZARD OVERLOAD (REWARDED REVIVE AD) MODAL (Compact & Unclipped!) -->
+          <div id="gameOverModal" class="hidden absolute inset-0 bg-[#1E1221]/90 backdrop-blur-xs rounded-xl flex items-center justify-center p-3 z-30">
+            <div class="tactile-card max-w-sm w-full p-4 text-center space-y-2.5 border-3 border-[#E5351A]">
+              <div class="inline-block px-2.5 py-0.5 rounded-full bg-[#E5351A] text-white text-[10px] font-bold uppercase tracking-wider">
+                ☠ Void Sinkhole Overload • 0 / 3 Hearts
+              </div>
+              <h3 class="font-display text-lg sm:text-xl font-bold text-[#1E1221]">Solar Circuit Burnt Out!</h3>
+              <p class="text-[11px] sm:text-xs text-[#253622] font-medium leading-snug">
+                Your beam struck a dark <strong>Void Sinkhole (☠)</strong> 3 times! Watch a quick video to restore all <strong>3 Solar Hearts (♥♥♥)</strong> and undo the fatal move, or restart.
+              </p>
+              <div class="p-2 rounded-lg bg-[#FFE392]/60 border border-[#FCB153] text-[11px] font-bold text-[#1E1221]">
+                🎁 Bonus: +3 Hearts + Safe Undo + Oracle Hint!
+              </div>
+              <div class="flex items-center justify-center gap-2 pt-1">
+                <button onclick="reviveViaRewardedAd()" class="btn-tactile btn-jade px-3.5 py-2 rounded-xl text-xs font-bold">
+                  📺 Watch Ad: Revive +3 ♥
+                </button>
+                <button onclick="restartAfterGameOverWithMidroll()" class="btn-tactile btn-stone px-3 py-2 rounded-xl text-xs font-bold">
+                  ⟳ Restart Level (Ad)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Selected Unit Controls, Oracle Hints & Piece Guide (5 cols on md+) -->
+      <div class="md:col-span-5 flex flex-col gap-2.5 min-h-0">
+
+        <!-- Selected Unit Inspector & Tactile D-Pad -->
+        <div class="tactile-card p-3 space-y-2">
+          <div class="flex items-center justify-between border-b border-[#E4E1D3] pb-1.5">
+            <div class="min-w-0">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#529574] block">Direct Touch or D-Pad Control</span>
+              <h2 id="selectedPieceTitle" class="font-display text-sm font-bold text-[#253622] truncate">Tap any unit on the board</h2>
+            </div>
+            <span id="selectedPieceBadge" class="px-2 py-0.5 rounded-md bg-[#FFE392] border border-[#253622] text-[11px] font-bold text-[#1E1221] shrink-0">Ready</span>
+          </div>
+
+          <p id="selectedPieceDesc" class="text-[11px] text-[#253622] leading-snug hidden sm:block">
+            Tap a unit on the board, then tap any highlighted neighbor square to move/swap—or tap the unit again to rotate 90&deg;!
+          </p>
+
+          <!-- Compact Tactile Step & Rotate Pad (Hidden on tiny mobile screens where direct board tap + bottom bar is used, shown on sm/md+) -->
+          <div class="hidden sm:grid grid-cols-3 gap-1.5 max-w-[195px] mx-auto">
+            <button onclick="rotateSelectedPiece(-1)" class="btn-tactile btn-orange py-1.5 rounded-lg text-[11px] font-bold">↺ 90&deg;</button>
+            <button onclick="moveSelectedPiece(0, -1)" class="btn-tactile btn-stone py-1.5 rounded-lg text-xs font-bold">▲</button>
+            <button onclick="rotateSelectedPiece(1)" class="btn-tactile btn-orange py-1.5 rounded-lg text-[11px] font-bold">↻ 90&deg;</button>
+
+            <button onclick="moveSelectedPiece(-1, 0)" class="btn-tactile btn-stone py-1.5 rounded-lg text-xs font-bold">◀</button>
+            <div class="flex items-center justify-center font-mono-num text-[10px] font-bold text-[#253622] bg-[#E4E1D3] rounded-lg border border-[#B5AEAD]" id="selectedCoordsLabel">
+              --
+            </div>
+            <button onclick="moveSelectedPiece(1, 0)" class="btn-tactile btn-stone py-1.5 rounded-lg text-xs font-bold">▶</button>
+
+            <div></div>
+            <button onclick="moveSelectedPiece(0, 1)" class="btn-tactile btn-stone py-1.5 rounded-lg text-xs font-bold">▼</button>
+            <div></div>
+          </div>
+
+          <!-- Hint, Auto-Step & Skip Level Buttons -->
+          <div class="grid grid-cols-3 gap-1.5 pt-1">
+            <button onclick="triggerHintHighlight()" class="btn-tactile btn-jade py-1.5 px-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1">
+              <span>💡 Highlight Hint</span>
+            </button>
+            <button onclick="applyOneSolutionStep()" class="btn-tactile btn-indigo py-1.5 px-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1">
+              <span>✨ Auto-Solve 1 Step</span>
+            </button>
+            <button onclick="skipLevelViaRewardedAd()" class="btn-tactile btn-cobalt py-1.5 px-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1">
+              <span>⏭️ Skip (Ad)</span>
+            </button>
+          </div>
+
+          <div id="oracleHintBanner" class="p-2 rounded-lg bg-[#FFE392]/70 border border-[#FCB153] text-[11px] font-semibold text-[#1E1221] leading-snug">
+            Rayforge Oracle: Tap any unit to move or tap it twice to rotate 90&deg;!
+          </div>
+        </div>
+
+        <!-- Compact Optical Units Guide (Desktop / Landscape Iframe) -->
+        <div class="tactile-card p-3 space-y-1.5 hidden md:block">
+          <h3 class="font-display text-xs font-bold uppercase tracking-wider text-[#253622] border-b border-[#E4E1D3] pb-1">
+            Optical Units &amp; Hazard Guide
+          </h3>
+          <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+            <div class="p-1.5 rounded-lg bg-[#E4E1D3]/70 border border-[#B5AEAD] flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-[#5E4FAD] text-white font-bold flex items-center justify-center shrink-0 text-xs">◢</span>
+              <div class="leading-tight"><strong class="text-[#1E1221]">Angle Warden:</strong> 1-sided mirror; back blocks</div>
+            </div>
+            <div class="p-1.5 rounded-lg bg-[#E4E1D3]/70 border border-[#B5AEAD] flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-[#529574] text-white font-bold flex items-center justify-center shrink-0 text-xs">⟋</span>
+              <div class="leading-tight"><strong class="text-[#1E1221]">Twin-Lens:</strong> 2-sided mirror &amp; swaps</div>
+            </div>
+            <div class="p-1.5 rounded-lg bg-[#E4E1D3]/70 border border-[#B5AEAD] flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-[#986BE2] text-white font-bold flex items-center justify-center shrink-0 text-xs">❖</span>
+              <div class="leading-tight"><strong class="text-[#1E1221]">Aether Prism:</strong> 50/50 beam splitter</div>
+            </div>
+            <div class="p-1.5 rounded-lg bg-[#E4E1D3]/70 border border-[#B5AEAD] flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-[#1E1221] text-[#E5351A] font-bold flex items-center justify-center shrink-0 text-xs">☠</span>
+              <div class="leading-tight"><strong class="text-[#1E1221]">Void Sinkhole:</strong> Costs 1 ♥ if struck</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: 100-LEVEL WORLD & STAGE SELECTOR    -->
+    <!-- ========================================== -->
+    <section id="tabLevels" class="hidden flex-1 flex-col gap-3 min-h-0 overflow-y-auto pr-1">
+      <div class="tactile-card p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4E1D3] pb-2.5">
+          <div>
+            <span class="text-[11px] font-bold uppercase text-[#529574]">100 Verified Solvable Stages</span>
+            <h2 class="font-display text-lg sm:text-xl font-bold text-[#253622]">SELECT WORLD &amp; STAGE (1 – 100)</h2>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button id="worldFilter0" onclick="filterLevelGrid(0)" class="btn-tactile btn-orange px-2.5 py-1 rounded-lg text-xs font-bold">W1: Courtyard (1-20)</button>
+            <button id="worldFilter1" onclick="filterLevelGrid(1)" class="btn-tactile btn-stone px-2.5 py-1 rounded-lg text-xs font-bold">W2: Anubis (21-40)</button>
+            <button id="worldFilter2" onclick="filterLevelGrid(2)" class="btn-tactile btn-stone px-2.5 py-1 rounded-lg text-xs font-bold">W3: Eye of Horus (41-60)</button>
+            <button id="worldFilter3" onclick="filterLevelGrid(3)" class="btn-tactile btn-stone px-2.5 py-1 rounded-lg text-xs font-bold">W4: Twin Splitters (61-80)</button>
+            <button id="worldFilter4" onclick="filterLevelGrid(4)" class="btn-tactile btn-stone px-2.5 py-1 rounded-lg text-xs font-bold">W5: Grand Vault (81-100)</button>
+          </div>
+        </div>
+
+        <p id="worldFilterDesc" class="text-xs font-semibold text-[#253622]">
+          World 1 — Sunstone Courtyard (Levels 1–20): Master Angle Warden 90&deg; reflections and Twin-Lens Rotor mirrors.
+        </p>
+
+        <div id="levelSelectGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5"></div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CUSTOM LEVEL BUILDER & SHARE EXPORT -->
+    <!-- ========================================== -->
+    <section id="tabBuilder" class="hidden flex-1 flex-col gap-3 min-h-0 overflow-y-auto pr-1">
+      <div class="tactile-card p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4E1D3] pb-2.5">
+          <div>
+            <span class="text-[11px] font-bold uppercase text-[#F8650F]">Creative Sandbox Mode</span>
+            <h2 class="font-display text-lg sm:text-xl font-bold text-[#253622]">CUSTOM LEVEL BUILDER &amp; SHARE CODE</h2>
+            <p class="text-xs text-[#253622]">Pick a unit below, tap tiles on the Play Board to place or rotate them, and share your custom level code!</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="clearBoardForBuilder()" class="btn-tactile btn-stone px-3 py-1.5 rounded-lg text-xs font-bold">
+              🧹 Clear Empty Board
+            </button>
+            <button onclick="exportCustomLevelCode()" class="btn-tactile btn-jade px-3 py-1.5 rounded-lg text-xs font-bold">
+              📋 Generate &amp; Copy Level Code
+            </button>
+            <button onclick="switchTab('play')" class="btn-tactile btn-orange px-3.5 py-1.5 rounded-lg text-xs font-bold">
+              ▶ Play &amp; Test Your Level
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2" id="builderPaletteGrid">
+          <button onclick="setBuilderTool('pyramid')" id="toolBtn_pyramid" class="btn-tactile btn-indigo p-2.5 rounded-xl text-xs font-bold text-center">◢ Pyramid Mirror</button>
+          <button onclick="setBuilderTool('scarab')" id="toolBtn_scarab" class="btn-tactile btn-jade p-2.5 rounded-xl text-xs font-bold text-center">⟋ Scarab Dual</button>
+          <button onclick="setBuilderTool('splitter')" id="toolBtn_splitter" class="btn-tactile btn-stone p-2.5 rounded-xl text-xs font-bold text-center">☥ Eye of Horus</button>
+          <button onclick="setBuilderTool('shrine')" id="toolBtn_shrine" class="btn-tactile btn-cream p-2.5 rounded-xl text-xs font-bold text-center">★ Target Shrine</button>
+          <button onclick="setBuilderTool('hazard')" id="toolBtn_hazard" class="btn-tactile btn-stone p-2.5 rounded-xl text-xs font-bold text-center">☠ Cursed Obelisk</button>
+          <button onclick="setBuilderTool('wall')" id="toolBtn_wall" class="btn-tactile btn-stone p-2.5 rounded-xl text-xs font-bold text-center">⬛ Stone Wall</button>
+          <button onclick="setBuilderTool('erase')" id="toolBtn_erase" class="btn-tactile btn-stone p-2.5 rounded-xl text-xs font-bold text-center">✕ Erase Tile</button>
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="customLevelJsonBox" class="text-xs font-bold uppercase text-[#253622]">Exported Level JSON Code:</label>
+          <div class="flex gap-2">
+            <input id="customLevelJsonBox" type="text" readonly value='{"sphinx":{"x":0,"y":3,"dir":1},"pieces":[]}' class="flex-1 px-3 py-1.5 rounded-lg bg-[#E4E1D3] border-2 border-[#253622] font-mono-num text-xs text-[#1E1221]" />
+            <button onclick="loadCustomSampleChallenge()" class="btn-tactile btn-cobalt px-3.5 py-1.5 rounded-lg text-xs font-bold">
+              Load Master Splitter Preset
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- TAB 4: DEVELOPER PORTAL SDK DIAGNOSTICS (Hidden in Prod)   -->
+    <!-- ========================================================== -->
+    <section id="tabSdk" class="hidden flex-1 flex-col gap-3 min-h-0 overflow-y-auto pr-1">
+      <div class="tactile-card p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4E1D3] pb-2">
+          <div>
+            <span class="text-xs font-bold uppercase text-[#529574]">Developer QA Mode (?debug=1)</span>
+            <h2 class="font-display text-lg font-bold text-[#253622]">PORTAL SDK &amp; AD TELEMETRY</h2>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="simulateHazardOverloadModal()" class="btn-tactile btn-indigo px-3 py-1.5 rounded-lg text-xs font-bold">
+              ☠ Test 0-Hearts Revive Modal
+            </button>
+            <button onclick="simulateMidrollAd()" class="btn-tactile btn-orange px-3 py-1.5 rounded-lg text-xs font-bold">
+              📺 Test Interstitial Ad Break
+            </button>
+            <button onclick="simulateRewardedAd()" class="btn-tactile btn-jade px-3 py-1.5 rounded-lg text-xs font-bold">
+              🎁 Test Rewarded Hint Ad
+            </button>
+          </div>
+        </div>
+        <div id="sdkEventLog" class="font-mono-num text-[11px] text-[#5E4FAD] bg-[#F8F9F9] p-2.5 rounded-lg border border-[#B5AEAD] h-28 overflow-y-auto">
+          [SDK] Silent Multi-Portal SDK Bridge Active...
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed bottom-3 right-3 z-50 hidden tactile-card-dark px-3.5 py-2 text-xs font-bold items-center gap-2 border-2 border-[#FFE392]">
+    <span class="text-[#FFE392]">☀</span>
+    <span id="toastMessage">Notification</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. SILENT MULTI-PORTAL COMMERCIAL SDK BRIDGE
+    //    Runs automatically in background on CrazyGames, Poki, Playgama, GD, YouTube
+    // =========================================================================
+    const CommercialPortalSDK = {
+      log(msg) {
+        const el = document.getElementById('sdkEventLog');
+        if (el) {
+          const line = document.createElement('div');
+          line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+          el.prepend(line);
+        }
+      },
+      gameplayStart() {
+        this.log('gameplayStart() dispatched');
+        try {
+          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
+            window.CrazyGames.SDK.game.gameplayStart();
+          }
+          if (window.PokiSDK && window.PokiSDK.gameplayStart) {
+            window.PokiSDK.gameplayStart();
+          }
+          if (window.ytgame && window.ytgame.game && window.ytgame.game.firstFrameReady) {
+            window.ytgame.game.firstFrameReady();
+            window.ytgame.game.gameReady();
+          }
+        } catch (e) {}
+      },
+      happyTime() {
+        this.log('happyTime() dispatched (3-Star Clear)');
+        try {
+          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
+            window.CrazyGames.SDK.game.happytime();
+          }
+          if (window.PokiSDK && window.PokiSDK.happyTime) {
+            window.PokiSDK.happyTime(0.8);
+          }
+        } catch (e) {}
+      },
+      commercialBreak(onComplete) {
+        this.log('commercialBreak("midgame") requested');
+        const prevMute = soundMuted;
+        soundMuted = true;
+        const finish = () => {
+          soundMuted = prevMute;
+          if (onComplete) onComplete();
+        };
+        try {
+          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
+            window.CrazyGames.SDK.ad.requestAd('midgame', {
+              adStarted: () => {},
+              adFinished: finish,
+              adError: finish
+            });
+            return;
+          }
+          if (window.PokiSDK && window.PokiSDK.commercialBreak) {
+            window.PokiSDK.commercialBreak().then(finish).catch(finish);
+            return;
+          }
+          if (window.gdsdk && window.gdsdk.showAd) {
+            window.gdsdk.showAd().then(finish).catch(finish);
+            return;
+          }
+        } catch (e) {}
+        setTimeout(finish, 180);
+      },
+      rewardedBreak(onReward) {
+        this.log('rewardedBreak("rewarded") requested');
+        const prevMute = soundMuted;
+        soundMuted = true;
+        const finish = (granted) => {
+          soundMuted = prevMute;
+          if (onReward) onReward(granted !== false);
+        };
+        try {
+          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
+            window.CrazyGames.SDK.ad.requestAd('rewarded', {
+              adStarted: () => {},
+              adFinished: () => finish(true),
+              adError: () => finish(true)
+            });
+            return;
+          }
+          if (window.PokiSDK && window.PokiSDK.rewardedBreak) {
+            window.PokiSDK.rewardedBreak().then(finish).catch(() => finish(true));
+            return;
+          }
+          if (window.gdsdk && window.gdsdk.showAd) {
+            window.gdsdk.showAd('rewarded').then(() => finish(true)).catch(() => finish(true));
+            return;
+          }
+        } catch (e) {}
+        setTimeout(() => finish(true), 220);
+      }
+    };
+
+    function simulateMidrollAd() {
+      CommercialPortalSDK.commercialBreak(() => {
+        showToast('Midgame Ad Break Completed');
+      });
+    }
+
+    function simulateRewardedAd() {
+      CommercialPortalSDK.rewardedBreak(() => {
+        showToast('Rewarded Ad Completed: +3 Solar Hearts!');
+      });
+    }
+
+    function simulateHazardOverloadModal() {
+      switchTab('play');
+      solarLives = 0;
+      updateLivesHeader();
+      document.getElementById('gameOverModal').classList.remove('hidden');
+      playSfx('hazard');
+    }
+
+    // =========================================================================
+    // 2. WEB AUDIO TACTILE SYNTHESIZER
+    // =========================================================================
+    let audioCtx = null;
+    let soundMuted = false;
+
+    function playSfx(kind) {
+      if (soundMuted) return;
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (kind === 'click') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.045);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+        osc.start(now);
+        osc.stop(now + 0.045);
+      } else if (kind === 'rotate') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(390, now);
+        osc.frequency.exponentialRampToValueAtTime(590, now + 0.08);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (kind === 'hazard') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(190, now);
+        osc.frequency.linearRampToValueAtTime(75, now + 0.24);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (kind === 'shrine') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.setValueAtTime(880, now + 0.07);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      } else if (kind === 'win') {
+        const chord = [523.25, 659.25, 783.99, 1046.5];
+        chord.forEach((f, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.frequency.setValueAtTime(f, now + idx * 0.07);
+          g.gain.setValueAtTime(0.16, now + idx * 0.07);
+          g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.32);
+          o.start(now + idx * 0.07);
+          o.stop(now + idx * 0.07 + 0.32);
+        });
+      }
+    }
+
+    function toggleSound() {
+      soundMuted = !soundMuted;
+      document.getElementById('soundIcon').textContent = soundMuted ? '🔇' : '🔊';
+      showToast(soundMuted ? 'Sound Muted' : 'Sound Effects Active');
+    }
+
+    // =========================================================================
+    // 3. RAYFORGE OPTICAL ENGINE & 100-LEVEL DETERMINISTIC GENERATOR
+    // =========================================================================
+    const DIR_DX = [0, 1, 0, -1];
+    const DIR_DY = [-1, 0, 1, 0];
+
+    const PYRAMID_REFLECT = {
+      0: { 2: 1, 3: 0 },
+      1: { 0: 1, 3: 2 },
+      2: { 0: 3, 1: 2 },
+      3: { 2: 3, 1: 0 }
+    };
+
+    function reflectSlashOrBackslash(rayDir, pieceDir) {
+      if (pieceDir % 2 === 0) {
+        return [1, 0, 3, 2][rayDir];
+      } else {
+        return [3, 2, 1, 0][rayDir];
+      }
+    }
+
+    function getPyramidDirForTurn(inDir, outDir) {
+      for (let d = 0; d < 4; d++) {
+        if (PYRAMID_REFLECT[d][inDir] === outDir) return d;
+      }
+      return 0;
+    }
+
+    function getSlashDirForTurn(inDir, outDir) {
+      return reflectSlashOrBackslash(inDir, 0) === outDir ? 0 : 1;
+    }
+
+    function createRng(seed) {
+      let s = seed >>> 0;
+      return function () {
+        s = (s + 0x6D2B79F5) >>> 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const ALL_100_LEVELS = [];
+
+    function buildSingleLevel(levelNum) {
+      const rng = createRng(levelNum * 9973 + 42);
+      const worldIdx = Math.floor((levelNum - 1) / 20);
+
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const used = new Set();
+        const key = (x, y) => `${x},${y}`;
+
+        const startOnLeft = (levelNum + attempt) % 2 === 0;
+        const sx = startOnLeft ? 0 : (1 + Math.floor(rng() * 5));
+        const sy = startOnLeft ? (1 + Math.floor(rng() * 5)) : 0;
+        const sdir = startOnLeft ? 1 : 2;
+        used.add(key(sx, sy));
+
+        const targetBounces = worldIdx === 0 ? (2 + (levelNum % 2)) : (3 + (levelNum % 2));
+        const useSplitter = worldIdx >= 2;
+        const useSecondSplitter = worldIdx >= 3 && (levelNum % 2 === 0);
+
+        let pieces = [];
+        let valid = true;
+
+        let cx = sx;
+        let cy = sy;
+        let cdir = sdir;
+        let branchRequests = [];
+
+        for (let b = 0; b < targetBounces; b++) {
+          const candidates = [];
+          for (let dist = 1; dist <= 6; dist++) {
+            const nx = cx + DIR_DX[cdir] * dist;
+            const ny = cy + DIR_DY[cdir] * dist;
+            if (nx < 1 || nx > 6 || ny < 1 || ny > 6) break;
+            if (used.has(key(nx, ny))) break;
+            candidates.push({ dist, nx, ny });
+          }
+          if (candidates.length === 0) {
+            valid = false;
+            break;
+          }
+          const pick = candidates[Math.floor(rng() * candidates.length)];
+          for (let d = 1; d <= pick.dist; d++) {
+            used.add(key(cx + DIR_DX[cdir] * d, cy + DIR_DY[cdir] * d));
+          }
+
+          const turnDirs = [(cdir + 1) % 4, (cdir + 3) % 4].filter(td => {
+            const tx = pick.nx + DIR_DX[td];
+            const ty = pick.ny + DIR_DY[td];
+            return tx >= 0 && tx < 8 && ty >= 0 && ty < 8 && !used.has(key(tx, ty));
+          });
+          if (turnDirs.length === 0) {
+            valid = false;
+            break;
+          }
+          const nextDir = turnDirs[Math.floor(rng() * turnDirs.length)];
+
+          const canSplitHere = (useSplitter && b === 0) || (useSecondSplitter && b === 1);
+          if (canSplitHere) {
+            const straightX = pick.nx + DIR_DX[cdir];
+            const straightY = pick.ny + DIR_DY[cdir];
+            if (straightX >= 0 && straightX < 8 && straightY >= 0 && straightY < 8 && !used.has(key(straightX, straightY))) {
+              const sDir = getSlashDirForTurn(cdir, nextDir);
+              pieces.push({
+                id: 'p_' + pieces.length,
+                type: 'splitter',
+                x: pick.nx,
+                y: pick.ny,
+                dir: sDir,
+                solvedX: pick.nx,
+                solvedY: pick.ny,
+                solvedDir: sDir
+              });
+              branchRequests.push({ x: pick.nx, y: pick.ny, dir: cdir });
+            } else {
+              const pType = rng() < 0.45 ? 'scarab' : 'pyramid';
+              const pDir = pType === 'scarab' ? getSlashDirForTurn(cdir, nextDir) : getPyramidDirForTurn(cdir, nextDir);
+              pieces.push({
+                id: 'p_' + pieces.length,
+                type: pType,
+                x: pick.nx,
+                y: pick.ny,
+                dir: pDir,
+                solvedX: pick.nx,
+                solvedY: pick.ny,
+                solvedDir: pDir
+              });
+            }
+          } else {
+            const pType = rng() < 0.4 ? 'scarab' : 'pyramid';
+            const pDir = pType === 'scarab' ? getSlashDirForTurn(cdir, nextDir) : getPyramidDirForTurn(cdir, nextDir);
+            pieces.push({
+              id: 'p_' + pieces.length,
+              type: pType,
+              x: pick.nx,
+              y: pick.ny,
+              dir: pDir,
+              solvedX: pick.nx,
+              solvedY: pick.ny,
+              solvedDir: pDir
+            });
+          }
+
+          cx = pick.nx;
+          cy = pick.ny;
+          cdir = nextDir;
+        }
+
+        if (!valid) continue;
+
+        const shrineCandidates = [];
+        for (let dist = 1; dist <= 5; dist++) {
+          const tx = cx + DIR_DX[cdir] * dist;
+          const ty = cy + DIR_DY[cdir] * dist;
+          if (tx < 0 || tx >= 8 || ty < 0 || ty >= 8) break;
+          if (used.has(key(tx, ty))) break;
+          shrineCandidates.push({ dist, tx, ty });
+        }
+        if (shrineCandidates.length === 0) continue;
+        const shrinePick = shrineCandidates[shrineCandidates.length - 1];
+        for (let d = 1; d <= shrinePick.dist; d++) {
+          used.add(key(cx + DIR_DX[cdir] * d, cy + DIR_DY[cdir] * d));
+        }
+        pieces.push({
+          id: 'shrine_main',
+          type: 'shrine',
+          x: shrinePick.tx,
+          y: shrinePick.ty,
+          dir: 0,
+          solvedX: shrinePick.tx,
+          solvedY: shrinePick.ty,
+          solvedDir: 0
+        });
+
+        let branchOk = true;
+        branchRequests.forEach((br, bIdx) => {
+          let bx = br.x;
+          let by = br.y;
+          let bdir = br.dir;
+          const bSteps = [];
+          for (let d = 1; d <= 5; d++) {
+            const nx = bx + DIR_DX[bdir] * d;
+            const ny = by + DIR_DY[bdir] * d;
+            if (nx < 0 || nx >= 8 || ny < 0 || ny >= 8) break;
+            if (used.has(key(nx, ny))) break;
+            bSteps.push({ d, nx, ny });
+          }
+          if (bSteps.length === 0) {
+            branchOk = false;
+            return;
+          }
+          const endStep = bSteps[bSteps.length - 1];
+          for (let d = 1; d <= endStep.d; d++) {
+            used.add(key(bx + DIR_DX[bdir] * d, by + DIR_DY[bdir] * d));
+          }
+          pieces.push({
+            id: 'shrine_sub_' + bIdx,
+            type: 'shrine',
+            x: endStep.nx,
+            y: endStep.ny,
+            dir: 0,
+            solvedX: endStep.nx,
+            solvedY: endStep.ny,
+            solvedDir: 0
+          });
+        });
+
+        if (!branchOk) continue;
+
+        const numWalls = worldIdx === 0 ? 2 : (3 + (levelNum % 3));
+        const numHazards = levelNum >= 3 ? (1 + (worldIdx >= 2 ? 1 : 0)) : 0;
+
+        for (let w = 0; w < numWalls + numHazards; w++) {
+          for (let tries = 0; tries < 20; tries++) {
+            const wx = 1 + Math.floor(rng() * 6);
+            const wy = 1 + Math.floor(rng() * 6);
+            if (!used.has(key(wx, wy))) {
+              used.add(key(wx, wy));
+              pieces.push({
+                id: 'obs_' + w,
+                type: w < numHazards ? 'hazard' : 'wall',
+                x: wx,
+                y: wy,
+                dir: 0,
+                solvedX: wx,
+                solvedY: wy,
+                solvedDir: 0
+              });
+              break;
+            }
+          }
+        }
+
+        let parMoves = 0;
+        const movablePieces = pieces.filter(p => p.type === 'pyramid' || p.type === 'scarab' || p.type === 'splitter');
+
+        movablePieces.forEach((p, idx) => {
+          if (p.type === 'pyramid') {
+            const rotSteps = (idx % 2 === 0) ? 1 : 3;
+            p.dir = (p.solvedDir + rotSteps) % 4;
+            parMoves += 1;
+          } else {
+            p.dir = (p.solvedDir + 1) % 2;
+            parMoves += 1;
+          }
+        });
+
+        const maxDisplacements = levelNum <= 5 ? 0 : (levelNum <= 35 ? 1 : 2);
+        let displacedCount = 0;
+        for (let i = 0; i < movablePieces.length && displacedCount < maxDisplacements; i++) {
+          const p = movablePieces[i];
+          const dirs = [0, 1, 2, 3];
+          for (let d of dirs) {
+            const nx = p.x + DIR_DX[d];
+            const ny = p.y + DIR_DY[d];
+            if (nx >= 1 && nx <= 6 && ny >= 1 && ny <= 6 && !pieces.some(other => other.x === nx && other.y === ny) && !(nx === sx && ny === sy)) {
+              p.x = nx;
+              p.y = ny;
+              parMoves += 1;
+              displacedCount++;
+              break;
+            }
+          }
+        }
+
+        return {
+          levelNum,
+          worldIdx,
+          sphinx: { x: sx, y: sy, dir: sdir },
+          parMoves: Math.max(2, parMoves),
+          initialPieces: pieces.map(p => ({ ...p }))
+        };
+      }
+
+      return {
+        levelNum,
+        worldIdx,
+        sphinx: { x: 0, y: 2, dir: 1 },
+        parMoves: 2,
+        initialPieces: [
+          { id: 'p0', type: 'pyramid', x: 4, y: 2, dir: 1, solvedX: 4, solvedY: 2, solvedDir: 2 },
+          { id: 'p1', type: 'scarab', x: 4, y: 5, dir: 0, solvedX: 4, solvedY: 5, solvedDir: 1 },
+          { id: 's0', type: 'shrine', x: 7, y: 5, dir: 0, solvedX: 7, solvedY: 5, solvedDir: 0 }
+        ]
+      };
+    }
+
+    function initAll100Levels() {
+      ALL_100_LEVELS.length = 0;
+      for (let i = 1; i <= 100; i++) {
+        ALL_100_LEVELS.push(buildSingleLevel(i));
+      }
+    }
+
+    // =========================================================================
+    // 4. ACTIVE GAME STATE, 3-HEART HAZARD LIFE SYSTEM & RAY TRACER
+    // =========================================================================
+    let isDemoRestricted = false; // Set true in Free 20-Level Demo ZIP, false in Full 100-Level Edition
+    try {
+      if (localStorage.getItem('rayforge_vip_unlocked_v1') === 'true') {
+        isDemoRestricted = false;
+      }
+    } catch (e) {}
+
+    function openUnlockModal() {
+      const m = document.getElementById('unlockEditionModal');
+      if (m) m.classList.remove('hidden');
+      playSfx('shrine');
+    }
+
+    function closeUnlockModal() {
+      const m = document.getElementById('unlockEditionModal');
+      if (m) m.classList.add('hidden');
+      playSfx('click');
+    }
+
+    function redeemSupporterKey() {
+      const inp = document.getElementById('supporterKeyInput');
+      const code = (inp ? inp.value : '').trim().toUpperCase();
+      if (code === 'RAYFORGE-VIP' || code === 'SUNSTONE-100' || code === 'HRPLAYS') {
+        isDemoRestricted = false;
+        try { localStorage.setItem('rayforge_vip_unlocked_v1', 'true'); } catch (e) {}
+        closeUnlockModal();
+        renderLevelSelectGrid();
+        playSfx('win');
+        showToast('Full 100-Level Master Edition Unlocked! Enjoy Worlds 2–5!');
+      } else {
+        playSfx('hazard');
+        showToast('Invalid Key — Check SUPPORTER_UNLOCK_KEY_README.txt in your download!');
+      }
+    }
+
+    let currentLevelNumber = 1;
+    let activeSphinx = { x: 0, y: 2, dir: 1 };
+    let activePieces = [];
+    let selectedPieceId = null;
+    let moveHistory = [];
+    let movesTaken = 0;
+    let solarLives = 3;
+    let raySegments = [];
+    let litShrineCount = 0;
+    let totalShrineCount = 1;
+    let hitHazard = false;
+    let levelCompleted = false;
+    let hintPieceId = null;
+    let builderTool = null;
+    let currentWorldFilter = 0;
+
+    let levelStars = {};
+    try {
+      const saved = localStorage.getItem('rayforge_sunstone_stars_v1');
+      if (saved) levelStars = JSON.parse(saved);
+    } catch (e) {
+      levelStars = {};
+    }
+
+    function saveStarsToStorage() {
+      try {
+        localStorage.setItem('rayforge_sunstone_stars_v1', JSON.stringify(levelStars));
+      } catch (e) {}
+      updateTotalStarsHeader();
+    }
+
+    function updateTotalStarsHeader() {
+      const total = Object.values(levelStars).reduce((acc, s) => acc + s, 0);
+      const el = document.getElementById('totalStarsLabel');
+      if (el) el.textContent = `${total} / 300`;
+    }
+
+    function updateLivesHeader() {
+      const heartsEl = document.getElementById('livesHeartsDisplay');
+      const countEl = document.getElementById('livesCountLabel');
+      if (heartsEl && countEl) {
+        heartsEl.textContent = '♥'.repeat(Math.max(0, solarLives)) + '♡'.repeat(Math.max(0, 3 - solarLives));
+        countEl.textContent = `${Math.max(0, solarLives)}/3`;
+      }
+    }
+
+    function startLevel(lvlNum) {
+      if (isDemoRestricted && lvlNum > 20) {
+        openUnlockModal();
+        return;
+      }
+      currentLevelNumber = Math.max(1, Math.min(100, lvlNum));
+      const data = ALL_100_LEVELS[currentLevelNumber - 1];
+      activeSphinx = { ...data.sphinx };
+      activePieces = data.initialPieces.map(p => ({ ...p }));
+      selectedPieceId = null;
+      hintPieceId = null;
+      moveHistory = [];
+      movesTaken = 0;
+      solarLives = 3;
+      levelCompleted = false;
+
+      const firstMovable = activePieces.find(p => p.type === 'pyramid' || p.type === 'scarab' || p.type === 'splitter');
+      if (firstMovable) selectedPieceId = firstMovable.id;
+
+      document.getElementById('worldBadge').textContent = `World ${data.worldIdx + 1}`;
+      document.getElementById('levelNumberTitle').textContent = `Level ${currentLevelNumber} / 100`;
+      document.getElementById('parCounter').textContent = String(data.parMoves);
+      document.getElementById('winModal').classList.add('hidden');
+      document.getElementById('gameOverModal').classList.add('hidden');
+      document.getElementById('oracleHintBanner').textContent =
+        data.worldIdx >= 2
+          ? 'Aether Prism Active: Amethyst Splitters divide 1 ray into 2 simultaneous beams!'
+          : 'Rayforge Oracle: Tap any unit to move, or tap a selected unit again to rotate 90°!';
+
+      updateLivesHeader();
+      CommercialPortalSDK.gameplayStart();
+      traceLaserNetwork(false);
+      updateSelectedPieceInspector();
+      renderBoardCanvas();
+    }
+
+    function changeLevel(delta) {
+      playSfx('click');
+      let next = currentLevelNumber + delta;
+      if (next < 1) next = 100;
+      if (next > 100) next = 1;
+      startLevel(next);
+    }
+
+    function advanceToNextLevelWithAdCheck() {
+      playSfx('click');
+      const next = currentLevelNumber < 100 ? currentLevelNumber + 1 : 1;
+      if (currentLevelNumber % 4 === 0) {
+        CommercialPortalSDK.commercialBreak(() => startLevel(next));
+      } else {
+        startLevel(next);
+      }
+    }
+
+    function skipLevelViaRewardedAd() {
+      CommercialPortalSDK.rewardedBreak(() => {
+        levelStars[currentLevelNumber] = Math.max(levelStars[currentLevelNumber] || 0, 1);
+        saveStarsToStorage();
+        const next = currentLevelNumber < 100 ? currentLevelNumber + 1 : 1;
+        startLevel(next);
+        showToast(`Skipped to Level ${next}!`);
+      });
+    }
+
+    function reviveViaRewardedAd() {
+      CommercialPortalSDK.rewardedBreak(() => {
+        solarLives = 3;
+        updateLivesHeader();
+        document.getElementById('gameOverModal').classList.add('hidden');
+        if (hitHazard && moveHistory.length > 0) {
+          activePieces = moveHistory.pop();
+          traceLaserNetwork(false);
+        }
+        triggerHintHighlight();
+        renderBoardCanvas();
+        showToast('Revived with 3 Solar Hearts (♥♥♥) & Oracle Hint!');
+      });
+    }
+
+    function restartAfterGameOverWithMidroll() {
+      document.getElementById('gameOverModal').classList.add('hidden');
+      CommercialPortalSDK.commercialBreak(() => {
+        startLevel(currentLevelNumber);
+      });
+    }
+
+    function resetLevel() {
+      playSfx('rotate');
+      startLevel(currentLevelNumber);
+    }
+
+    function saveHistorySnapshot() {
+      moveHistory.push(activePieces.map(p => ({ ...p })));
+      if (moveHistory.length > 40) moveHistory.shift();
+    }
+
+    function undoLastMove() {
+      if (moveHistory.length === 0 || levelCompleted) return;
+      activePieces = moveHistory.pop();
+      movesTaken = Math.max(0, movesTaken - 1);
+      hintPieceId = null;
+      playSfx('click');
+      traceLaserNetwork(false);
+      updateSelectedPieceInspector();
+      renderBoardCanvas();
+    }
+
+    function getPieceAt(x, y) {
+      return activePieces.find(p => p.x === x && p.y === y);
+    }
+
+    function getSelectedPiece() {
+      return activePieces.find(p => p.id === selectedPieceId) || null;
+    }
+
+    function rotateSelectedPiece(stepDir) {
+      if (levelCompleted || solarLives <= 0) return;
+      const p = getSelectedPiece();
+      if (!p || (p.type !== 'pyramid' && p.type !== 'scarab' && p.type !== 'splitter')) {
+        showToast('Select an Angle Warden, Twin-Lens Rotor, or Aether Prism first!');
+        return;
+      }
+      saveHistorySnapshot();
+      if (p.type === 'pyramid') {
+        p.dir = (p.dir + (stepDir > 0 ? 1 : 3)) % 4;
+      } else {
+        p.dir = (p.dir + 1) % 2;
+      }
+      movesTaken++;
+      hintPieceId = null;
+      playSfx('rotate');
+      traceLaserNetwork(true);
+      updateSelectedPieceInspector();
+      renderBoardCanvas();
+    }
+
+    function moveSelectedPiece(dx, dy) {
+      if (levelCompleted || solarLives <= 0) return;
+      const p = getSelectedPiece();
+      if (!p || (p.type !== 'pyramid' && p.type !== 'scarab' && p.type !== 'splitter')) {
+        showToast('Select a movable optical unit first!');
+        return;
+      }
+      const nx = p.x + dx;
+      const ny = p.y + dy;
+      if (nx < 0 || nx >= 8 || ny < 0 || ny >= 8) return;
+      if (nx === activeSphinx.x && ny === activeSphinx.y) return;
+
+      const targetPiece = getPieceAt(nx, ny);
+      if (targetPiece) {
+        if (p.type === 'scarab' && (targetPiece.type === 'pyramid' || targetPiece.type === 'splitter')) {
+          saveHistorySnapshot();
+          targetPiece.x = p.x;
+          targetPiece.y = p.y;
+          p.x = nx;
+          p.y = ny;
+          movesTaken++;
+          hintPieceId = null;
+          playSfx('rotate');
+          traceLaserNetwork(true);
+          updateSelectedPieceInspector();
+          renderBoardCanvas();
+          showToast('Twin-Lens Rotor Position Swap Executed!');
+        }
+        return;
+      }
+
+      saveHistorySnapshot();
+      p.x = nx;
+      p.y = ny;
+      movesTaken++;
+      hintPieceId = null;
+      playSfx('click');
+      traceLaserNetwork(true);
+      updateSelectedPieceInspector();
+      renderBoardCanvas();
+    }
+
+    function traceLaserNetwork(penalizeHazardHit) {
+      document.getElementById('moveCounter').textContent = String(movesTaken);
+
+      const shrines = activePieces.filter(p => p.type === 'shrine');
+      shrines.forEach(s => { s.lit = false; });
+      totalShrineCount = shrines.length;
+      hitHazard = false;
+
+      raySegments = [];
+      const queue = [{ x: activeSphinx.x, y: activeSphinx.y, dir: activeSphinx.dir }];
+      const visited = new Set();
+
+      while (queue.length > 0) {
+        const beam = queue.shift();
+        let cx = beam.x;
+        let cy = beam.y;
+        let cdir = beam.dir;
+
+        for (let step = 0; step < 32; step++) {
+          const stateKey = `${cx},${cy},${cdir}`;
+          if (visited.has(stateKey)) break;
+          visited.add(stateKey);
+
+          const nx = cx + DIR_DX[cdir];
+          const ny = cy + DIR_DY[cdir];
+          if (nx < 0 || nx >= 8 || ny < 0 || ny >= 8) {
+            raySegments.push({ x1: cx, y1: cy, x2: cx + DIR_DX[cdir] * 0.5, y2: cy + DIR_DY[cdir] * 0.5 });
+            break;
+          }
+
+          raySegments.push({ x1: cx, y1: cy, x2: nx, y2: ny });
+
+          const hitPiece = getPieceAt(nx, ny);
+          if (hitPiece) {
+            if (hitPiece.type === 'wall') {
+              break;
+            } else if (hitPiece.type === 'hazard') {
+              hitHazard = true;
+              break;
+            } else if (hitPiece.type === 'shrine') {
+              hitPiece.lit = true;
+              break;
+            } else if (hitPiece.type === 'pyramid') {
+              const outDir = PYRAMID_REFLECT[hitPiece.dir][cdir];
+              if (outDir === undefined) {
+                break;
+              }
+              cdir = outDir;
+              cx = nx;
+              cy = ny;
+            } else if (hitPiece.type === 'scarab') {
+              cdir = reflectSlashOrBackslash(cdir, hitPiece.dir);
+              cx = nx;
+              cy = ny;
+            } else if (hitPiece.type === 'splitter') {
+              const reflDir = reflectSlashOrBackslash(cdir, hitPiece.dir);
+              queue.push({ x: nx, y: ny, dir: reflDir });
+              queue.push({ x: nx, y: ny, dir: cdir });
+              break;
+            }
+          } else {
+            cx = nx;
+            cy = ny;
+          }
+        }
+      }
+
+      if (hitHazard && penalizeHazardHit && !builderTool) {
+        solarLives = Math.max(0, solarLives - 1);
+        updateLivesHeader();
+        playSfx('hazard');
+        if (solarLives <= 0) {
+          document.getElementById('gameOverModal').classList.remove('hidden');
+        } else {
+          showToast(`☠ Void Sinkhole Struck! -1 Solar Heart (${solarLives}/3 Left)`);
+        }
+      }
+
+      const prevLit = litShrineCount;
+      litShrineCount = shrines.filter(s => s.lit).length;
+      if (litShrineCount > prevLit && !hitHazard) {
+        playSfx('shrine');
+      }
+
+      const pill = document.getElementById('shrineStatusPill');
+      pill.textContent = `Cores: ${litShrineCount}/${totalShrineCount}`;
+      if (hitHazard) {
+        pill.className = 'px-2 py-0.5 rounded bg-[#E5351A] text-white font-mono-num';
+        pill.textContent = '☠ SINKHOLE!';
+      } else if (litShrineCount === totalShrineCount && totalShrineCount > 0) {
+        pill.className = 'px-2 py-0.5 rounded bg-[#529574] text-white font-mono-num';
+      } else {
+        pill.className = 'px-2 py-0.5 rounded bg-[#FCB153] border border-[#253622] text-[#1E1221] font-mono-num';
+      }
+
+      if (!levelCompleted && !hitHazard && solarLives > 0 && totalShrineCount > 0 && litShrineCount === totalShrineCount && movesTaken > 0) {
+        levelCompleted = true;
+        const par = ALL_100_LEVELS[currentLevelNumber - 1].parMoves;
+        const stars = movesTaken <= par ? 3 : (movesTaken <= par + 2 ? 2 : 1);
+        levelStars[currentLevelNumber] = Math.max(levelStars[currentLevelNumber] || 0, stars);
+        saveStarsToStorage();
+
+        if (stars === 3) CommercialPortalSDK.happyTime();
+        playSfx('win');
+
+        document.getElementById('winModalTitle').textContent = `Level ${currentLevelNumber} Cleared!`;
+        document.getElementById('winStarRow').textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+        document.getElementById('winModalStats').textContent = `Solved in ${movesTaken} moves (Par: ${par}) • Hearts: ${solarLives}/3`;
+        document.getElementById('winModal').classList.remove('hidden');
+      }
+    }
+
+    function updateSelectedPieceInspector() {
+      const p = getSelectedPiece();
+      const titleEl = document.getElementById('selectedPieceTitle');
+      const badgeEl = document.getElementById('selectedPieceBadge');
+      const descEl = document.getElementById('selectedPieceDesc');
+      const coordsEl = document.getElementById('selectedCoordsLabel');
+
+      if (!p) {
+        titleEl.textContent = 'No Unit Selected';
+        badgeEl.textContent = 'Tap Board';
+        descEl.textContent = 'Tap any Angle Warden, Twin-Lens Rotor, or Aether Prism on the board to move or rotate it.';
+        coordsEl.textContent = '--';
+        return;
+      }
+
+      const names = {
+        pyramid: 'Angle Warden (1-Sided Mirror)',
+        scarab: 'Twin-Lens Rotor (Dual Swap Mirror)',
+        splitter: 'Aether Prism (50/50 Beam Splitter)',
+        shrine: 'Sunstone Core (Target Beacon)',
+        hazard: 'Void Sinkhole (Costs 1 ♥ if Hit!)',
+        wall: 'Basalt Monolith (Wall)'
+      };
+      const descs = {
+        pyramid: 'Deflects solar beams 90° on its gleaming diagonal face; blocks beams hitting its dark armored back.',
+        scarab: 'Deflects beams from both sides AND can swap places with an adjacent Angle Warden or Aether Prism!',
+        splitter: 'Splits any incoming beam into TWO rays: 50% passes straight through and 50% reflects 90°!',
+        shrine: 'Target Beacon! Illuminate every gold Sunstone Core simultaneously to clear the stage.',
+        hazard: 'Danger! If any beam branch strikes this Void Sinkhole, it deducts 1 Solar Heart (♥).',
+        wall: 'Solid basalt column. Stops beams cleanly without costing a Heart.'
+      };
+
+      titleEl.textContent = names[p.type] || p.type;
+      badgeEl.textContent = `Tile (${p.x + 1}, ${p.y + 1})`;
+      descEl.textContent = descs[p.type] || '';
+      coordsEl.textContent = `${p.x + 1},${p.y + 1}`;
+    }
+
+    function triggerHintHighlight() {
+      const mismatch = activePieces.find(p =>
+        (p.type === 'pyramid' || p.type === 'scarab' || p.type === 'splitter') &&
+        (p.x !== p.solvedX || p.y !== p.solvedY || p.dir !== p.solvedDir)
+      );
+      if (!mismatch) {
+        showToast('All optical units are already aligned!');
+        return;
+      }
+      selectedPieceId = mismatch.id;
+      hintPieceId = mismatch.id;
+      playSfx('shrine');
+      updateSelectedPieceInspector();
+      renderBoardCanvas();
+
+      const labelMap = { pyramid: 'ANGLE WARDEN', scarab: 'TWIN-LENS ROTOR', splitter: 'Aether Prism' };
+      const unitName = labelMap[mismatch.type] || mismatch.type.toUpperCase();
+      const actionMsg = (mismatch.x !== mismatch.solvedX || mismatch.y !== mismatch.solvedY)
+        ? `Oracle Hint: Move ${unitName} at (${mismatch.x + 1},${mismatch.y + 1}) to (${mismatch.solvedX + 1},${mismatch.solvedY + 1})!`
+        : `Oracle Hint: Tap or press [R] to rotate ${unitName} at (${mismatch.x + 1},${mismatch.y + 1}) by 90°!`;
+      document.getElementById('oracleHintBanner').textContent = actionMsg;
+      showToast(actionMsg);
+    }
+
+    function applyOneSolutionStep() {
+      if (levelCompleted) return;
+      const mismatch = activePieces.find(p =>
+        (p.type === 'pyramid' || p.type === 'scarab' || p.type === 'splitter') &&
+        (p.x !== p.solvedX || p.y !== p.solvedY || p.dir !== p.solvedDir)
+      );
+      if (!mismatch) return;
+
+      CommercialPortalSDK.rewardedBreak(() => {
+        saveHistorySnapshot();
+        selectedPieceId = mismatch.id;
+        if (mismatch.x !== mismatch.solvedX || mismatch.y !== mismatch.solvedY) {
+          mismatch.x = mismatch.solvedX;
+          mismatch.y = mismatch.solvedY;
+        } else {
+          mismatch.dir = mismatch.solvedDir;
+        }
+        movesTaken++;
+        playSfx('rotate');
+        traceLaserNetwork(false);
+        updateSelectedPieceInspector();
+        renderBoardCanvas();
+      });
+    }
+
+    // =========================================================================
+    // 5. TACTILE CANVAS RENDERER & TOUCH/SWIPE MOBILE CONTROLLER
+    // =========================================================================
+    const CELL = 64;
+
+    function renderBoardCanvas() {
+      const canvas = document.getElementById('khetCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 512);
+
+      const selPiece = getSelectedPiece();
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const x = c * CELL;
+          const y = r * CELL;
+          const isEven = (r + c) % 2 === 0;
+
+          ctx.fillStyle = isEven ? '#F8F9F9' : '#E4E1D3';
+          ctx.fillRect(x, y, CELL, CELL);
+
+          ctx.strokeStyle = '#B5AEAD';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(x + 1, y + 1, CELL - 2, CELL - 2);
+
+          if (selPiece && (selPiece.type === 'pyramid' || selPiece.type === 'scarab' || selPiece.type === 'splitter')) {
+            const dist = Math.abs(selPiece.x - c) + Math.abs(selPiece.y - r);
+            if (dist === 1 && !(c === activeSphinx.x && r === activeSphinx.y)) {
+              const occ = getPieceAt(c, r);
+              if (!occ || (selPiece.type === 'scarab' && (occ.type === 'pyramid' || occ.type === 'splitter'))) {
+                ctx.fillStyle = 'rgba(255, 227, 146, 0.65)';
+                ctx.fillRect(x + 3, y + 3, CELL - 6, CELL - 6);
+                ctx.strokeStyle = '#F8650F';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.strokeRect(x + 5, y + 5, CELL - 10, CELL - 10);
+                ctx.setLineDash([]);
+              }
+            }
+          }
+        }
+      }
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      raySegments.forEach(seg => {
+        const x1 = seg.x1 * CELL + 32;
+        const y1 = seg.y1 * CELL + 32;
+        const x2 = seg.x2 * CELL + 32;
+        const y2 = seg.y2 * CELL + 32;
+
+        ctx.strokeStyle = '#E5351A';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#FFE392';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      });
+      ctx.restore();
+
+      drawSphinxEmitter(ctx, activeSphinx.x, activeSphinx.y, activeSphinx.dir);
+
+      activePieces.forEach(p => {
+        const isSelected = p.id === selectedPieceId;
+        const isHinted = p.id === hintPieceId;
+        drawPieceOnCanvas(ctx, p, isSelected, isHinted);
+      });
+    }
+
+    function drawSphinxEmitter(ctx, gx, gy, dir) {
+      const x = gx * CELL;
+      const y = gy * CELL;
+
+      ctx.fillStyle = '#AD2A18';
+      ctx.beginPath();
+      ctx.roundRect(x + 7, y + 10, CELL - 14, CELL - 14, 12);
+      ctx.fill();
+
+      ctx.fillStyle = '#E5351A';
+      ctx.beginPath();
+      ctx.roundRect(x + 7, y + 6, CELL - 14, CELL - 14, 12);
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#1E1221';
+      ctx.stroke();
+
+      const cx = x + 32;
+      const cy = y + 29;
+      ctx.fillStyle = '#FFE392';
+      ctx.beginPath();
+      ctx.arc(cx + DIR_DX[dir] * 11, cy + DIR_DY[dir] * 11, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#1E1221';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 10px Fredoka';
+      ctx.textAlign = 'center';
+      ctx.fillText('FORGE', cx, cy + 4);
+    }
+
+    function drawPieceOnCanvas(ctx, p, isSelected, isHinted) {
+      const x = p.x * CELL;
+      const y = p.y * CELL;
+      const cx = x + 32;
+      const cy = y + 32;
+
+      if (isSelected || isHinted) {
+        ctx.fillStyle = isHinted ? '#529574' : '#F8650F';
+        ctx.beginPath();
+        ctx.roundRect(x + 3, y + 3, CELL - 6, CELL - 6, 14);
+        ctx.fill();
+      }
+
+      if (p.type === 'wall') {
+        ctx.fillStyle = '#253622';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 11, CELL - 16, CELL - 16, 10);
+        ctx.fill();
+
+        ctx.fillStyle = '#B1C2CE';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 7, CELL - 16, CELL - 16, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#1E1221';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#253622';
+        ctx.beginPath();
+        ctx.arc(cx, cy - 2, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.type === 'hazard') {
+        ctx.fillStyle = '#1E1221';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 8, CELL - 16, CELL - 16, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#E5351A';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#E5351A';
+        ctx.font = 'bold 18px Fredoka';
+        ctx.textAlign = 'center';
+        ctx.fillText('☠', cx, cy + 6);
+      } else if (p.type === 'shrine') {
+        ctx.fillStyle = p.lit ? '#253622' : '#AD2A18';
+        ctx.beginPath();
+        ctx.roundRect(x + 7, y + 11, CELL - 14, CELL - 14, 12);
+        ctx.fill();
+
+        ctx.fillStyle = p.lit ? '#529574' : '#FCB153';
+        ctx.beginPath();
+        ctx.roundRect(x + 7, y + 7, CELL - 14, CELL - 14, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#1E1221';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.fillStyle = p.lit ? '#FFE392' : '#1E1221';
+        ctx.font = 'bold 20px Fredoka';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', cx, cy + 5);
+      } else if (p.type === 'pyramid') {
+        ctx.fillStyle = '#1E1221';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 11, CELL - 16, CELL - 16, 11);
+        ctx.fill();
+
+        ctx.fillStyle = '#5E4FAD';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 7, CELL - 16, CELL - 16, 11);
+        ctx.fill();
+        ctx.strokeStyle = '#1E1221';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy - 2);
+        ctx.rotate((p.dir * Math.PI) / 2);
+        ctx.fillStyle = '#253622';
+        ctx.beginPath();
+        ctx.moveTo(-16, -16);
+        ctx.lineTo(-16, 16);
+        ctx.lineTo(16, 16);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFE392';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-15, -15);
+        ctx.lineTo(15, 15);
+        ctx.stroke();
+        ctx.restore();
+      } else if (p.type === 'scarab') {
+        ctx.fillStyle = '#253622';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 11, CELL - 16, CELL - 16, 14);
+        ctx.fill();
+
+        ctx.fillStyle = '#529574';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 7, CELL - 16, CELL - 16, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#1E1221';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.strokeStyle = '#F8F9F9';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        if (p.dir % 2 === 0) {
+          ctx.moveTo(x + 16, y + 44);
+          ctx.lineTo(x + 48, y + 14);
+        } else {
+          ctx.moveTo(x + 16, y + 14);
+          ctx.lineTo(x + 48, y + 44);
+        }
+        ctx.stroke();
+      } else if (p.type === 'splitter') {
+        ctx.fillStyle = '#312768';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 11, CELL - 16, CELL - 16, 14);
+        ctx.fill();
+
+        ctx.fillStyle = '#986BE2';
+        ctx.beginPath();
+        ctx.roundRect(x + 8, y + 7, CELL - 16, CELL - 16, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#1E1221';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.strokeStyle = '#FFE392';
+        ctx.lineWidth = 5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        if (p.dir % 2 === 0) {
+          ctx.moveTo(x + 15, y + 45);
+          ctx.lineTo(x + 49, y + 13);
+        } else {
+          ctx.moveTo(x + 15, y + 13);
+          ctx.lineTo(x + 49, y + 45);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    function initCanvasEvents() {
+      const canvas = document.getElementById('khetCanvas');
+      if (!canvas) return;
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const gx = Math.floor(((e.clientX - rect.left) * (canvas.width / rect.width)) / CELL);
+        const gy = Math.floor(((e.clientY - rect.top) * (canvas.height / rect.height)) / CELL);
+        if (gx < 0 || gx >= 8 || gy < 0 || gy >= 8) return;
+
+        if (builderTool) {
+          applyBuilderClick(gx, gy);
+          return;
+        }
+
+        if (levelCompleted || solarLives <= 0) return;
+
+        const clickedPiece = getPieceAt(gx, gy);
+        const currentSel = getSelectedPiece();
+
+        if (clickedPiece && currentSel && clickedPiece.id === currentSel.id) {
+          if (clickedPiece.type === 'pyramid' || clickedPiece.type === 'scarab' || clickedPiece.type === 'splitter') {
+            rotateSelectedPiece(1);
+            return;
+          }
+        }
+
+        if (currentSel && currentSel.type === 'scarab' && clickedPiece && (clickedPiece.type === 'pyramid' || clickedPiece.type === 'splitter')) {
+          const dist = Math.abs(currentSel.x - gx) + Math.abs(currentSel.y - gy);
+          if (dist === 1) {
+            moveSelectedPiece(gx - currentSel.x, gy - currentSel.y);
+            return;
+          }
+        }
+
+        if (clickedPiece) {
+          selectedPieceId = clickedPiece.id;
+          playSfx('click');
+          updateSelectedPieceInspector();
+          renderBoardCanvas();
+          return;
+        }
+
+        if (currentSel && (currentSel.type === 'pyramid' || currentSel.type === 'scarab' || currentSel.type === 'splitter')) {
+          const dist = Math.abs(currentSel.x - gx) + Math.abs(currentSel.y - gy);
+          if (dist === 1) {
+            moveSelectedPiece(gx - currentSel.x, gy - currentSel.y);
+          }
+        }
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('tabPlay').classList.contains('hidden')) return;
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') moveSelectedPiece(0, -1);
+      if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') moveSelectedPiece(0, 1);
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') moveSelectedPiece(-1, 0);
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') moveSelectedPiece(1, 0);
+      if (e.key === 'r' || e.key === 'R' || e.key === ' ') rotateSelectedPiece(1);
+      if (e.key === 'q' || e.key === 'Q') rotateSelectedPiece(-1);
+      if (e.key === 'z' || e.key === 'Z') undoLastMove();
+    });
+
+    // =========================================================================
+    // 6. 100-LEVEL SELECTOR UI
+    // =========================================================================
+    const WORLD_DESCRIPTIONS = [
+      'World 1 — Sunstone Courtyard (Levels 1–20): Master 1-sided Angle Wardens and 2-sided Twin-Lens Rotors.',
+      'World 2 — Obsidian Bastion (Levels 21–40): Navigate around Basalt Monoliths and Void Sinkhole hazards (3 ♥ Lives).',
+      'World 3 — Aether Prism Sanctum (Levels 41–60): Introduces the Amethyst 50/50 Beam Splitter with 2 simultaneous Cores!',
+      'World 4 — Twin-Ray Foundry (Levels 61–80): Multi-splitter optical networks and Twin-Lens position-swapping trials.',
+      'World 5 — Grand Helios Vault (Levels 81–100): Grandmaster 3-core solar circuits with tight Par move targets.'
+    ];
+
+    function filterLevelGrid(worldIdx) {
+      currentWorldFilter = worldIdx;
+      playSfx('click');
+      for (let i = 0; i < 5; i++) {
+        const b = document.getElementById('worldFilter' + i);
+        if (!b) continue;
+        b.className = i === worldIdx
+          ? 'btn-tactile btn-orange px-2.5 py-1 rounded-lg text-xs font-bold'
+          : 'btn-tactile btn-stone px-2.5 py-1 rounded-lg text-xs font-bold';
+      }
+      document.getElementById('worldFilterDesc').textContent = WORLD_DESCRIPTIONS[worldIdx];
+      renderLevelSelectGrid();
+    }
+
+    function renderLevelSelectGrid() {
+      const grid = document.getElementById('levelSelectGrid');
+      if (!grid) return;
+      const startLvl = currentWorldFilter * 20 + 1;
+      const endLvl = startLvl + 19;
+
+      let html = '';
+      for (let lvl = startLvl; lvl <= endLvl; lvl++) {
+        const data = ALL_100_LEVELS[lvl - 1];
+        const stars = levelStars[lvl] || 0;
+        const starStr = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+        const hasSplitter = data.initialPieces.some(p => p.type === 'splitter');
+        const shrinesCount = data.initialPieces.filter(p => p.type === 'shrine').length;
+        const cardStyle = lvl === currentLevelNumber
+          ? 'bg-[#FFE392] border-[#253622]'
+          : (stars > 0 ? 'bg-[#529574]/15 border-[#529574]' : 'bg-[#E4E1D3] border-[#253622]');
+
+        html += `
+          <button onclick="selectLevelFromGrid(${lvl})" class="btn-tactile ${cardStyle} p-2.5 rounded-xl text-left flex flex-col justify-between gap-1">
+            <div class="flex items-center justify-between w-full">
+              <span class="font-display text-xs sm:text-sm font-bold text-[#1E1221]">Level ${lvl}</span>
+              <span class="text-xs font-bold text-[#F8650F]">${starStr}</span>
+            </div>
+            <div class="text-[10px] font-semibold text-[#253622] flex items-center justify-between w-full">
+              <span>Par: ${data.parMoves}</span>
+              <span>${hasSplitter ? '❖ Prism' : '◢ Warden'} (${shrinesCount}★)</span>
+            </div>
+          </button>
+        `;
+      }
+      grid.innerHTML = html;
+    }
+
+    function selectLevelFromGrid(lvl) {
+      playSfx('click');
+      builderTool = null;
+      switchTab('play');
+      startLevel(lvl);
+    }
+
+    // =========================================================================
+    // 7. CUSTOM LEVEL BUILDER MODE
+    // =========================================================================
+    function setBuilderTool(tool) {
+      builderTool = tool;
+      playSfx('click');
+      const tools = ['pyramid', 'scarab', 'splitter', 'shrine', 'hazard', 'wall', 'erase'];
+      tools.forEach(t => {
+        const btn = document.getElementById('toolBtn_' + t);
+        if (!btn) return;
+        btn.className = t === tool
+          ? 'btn-tactile btn-orange p-2.5 rounded-xl text-xs font-bold text-center'
+          : 'btn-tactile btn-stone p-2.5 rounded-xl text-xs font-bold text-center';
+      });
+      showToast(`Builder Tool: ${tool.toUpperCase()} — Tap tiles on Play Board!`);
+    }
+
+    function applyBuilderClick(gx, gy) {
+      if (gx === activeSphinx.x && gy === activeSphinx.y) {
+        activeSphinx.dir = (activeSphinx.dir + 1) % 4;
+        playSfx('rotate');
+        traceLaserNetwork(false);
+        renderBoardCanvas();
+        return;
+      }
+      const existingIdx = activePieces.findIndex(p => p.x === gx && p.y === gy);
+      if (builderTool === 'erase') {
+        if (existingIdx !== -1) activePieces.splice(existingIdx, 1);
+      } else {
+        if (existingIdx !== -1) {
+          const ex = activePieces[existingIdx];
+          if (ex.type === builderTool) {
+            ex.dir = (ex.dir + 1) % 4;
+          } else {
+            activePieces.splice(existingIdx, 1);
+          }
+        } else {
+          activePieces.push({
+            id: 'cust_' + Date.now() + '_' + Math.random(),
+            type: builderTool,
+            x: gx,
+            y: gy,
+            dir: 0,
+            solvedX: gx,
+            solvedY: gy,
+            solvedDir: 0
+          });
+        }
+      }
+      playSfx('click');
+      levelCompleted = false;
+      traceLaserNetwork(false);
+      renderBoardCanvas();
+      document.getElementById('customLevelJsonBox').value = JSON.stringify({
+        sphinx: activeSphinx,
+        pieces: activePieces.map(p => ({ type: p.type, x: p.x, y: p.y, dir: p.dir }))
+      });
+    }
+
+    function clearBoardForBuilder() {
+      playSfx('rotate');
+      activeSphinx = { x: 0, y: 3, dir: 1 };
+      activePieces = [
+        { id: 'c_shrine', type: 'shrine', x: 7, y: 3, dir: 0, solvedX: 7, solvedY: 3, solvedDir: 0 }
+      ];
+      setBuilderTool('splitter');
+      traceLaserNetwork(false);
+      renderBoardCanvas();
+      showToast('Board cleared! Switch to Play Board to place custom units.');
+    }
+
+    function exportCustomLevelCode() {
+      const jsonStr = JSON.stringify({
+        sphinx: activeSphinx,
+        pieces: activePieces.map(p => ({ type: p.type, x: p.x, y: p.y, dir: p.dir }))
+      });
+      const input = document.getElementById('customLevelJsonBox');
+      input.value = jsonStr;
+      input.select();
+      try {
+        document.execCommand('copy');
+        showToast('Custom Level JSON Copied to Clipboard!');
+      } catch (e) {
+        showToast('Level JSON generated in box below!');
+      }
+    }
+
+    function loadCustomSampleChallenge() {
+      playSfx('shrine');
+      builderTool = null;
+      activeSphinx = { x: 0, y: 1, dir: 1 };
+      activePieces = [
+        { id: 'm1', type: 'splitter', x: 3, y: 1, dir: 0, solvedX: 3, solvedY: 1, solvedDir: 1 },
+        { id: 'm2', type: 'pyramid', x: 6, y: 1, dir: 1, solvedX: 6, solvedY: 1, solvedDir: 2 },
+        { id: 'm3', type: 'scarab', x: 3, y: 5, dir: 1, solvedX: 3, solvedY: 5, solvedDir: 1 },
+        { id: 's1', type: 'shrine', x: 6, y: 6, dir: 0, solvedX: 6, solvedY: 6, solvedDir: 0 },
+        { id: 's2', type: 'shrine', x: 7, y: 5, dir: 0, solvedX: 7, solvedY: 5, solvedDir: 0 }
+      ];
+      movesTaken = 0;
+      solarLives = 3;
+      updateLivesHeader();
+      levelCompleted = false;
+      switchTab('play');
+      traceLaserNetwork(false);
+      renderBoardCanvas();
+      showToast('Loaded Master Aether Prism Dual-Beam Preset!');
+    }
+
+    // =========================================================================
+    // 8. TAB NAVIGATION & TOASTS
+    // =========================================================================
+    function switchTab(tab) {
+      playSfx('click');
+      if (tab === 'play') builderTool = null;
+
+      const tabs = {
+        play: document.getElementById('tabPlay'),
+        levels: document.getElementById('tabLevels'),
+        builder: document.getElementById('tabBuilder'),
+        sdk: document.getElementById('tabSdk')
+      };
+      const btns = {
+        play: document.getElementById('navBtnPlay'),
+        levels: document.getElementById('navBtnLevels'),
+        builder: document.getElementById('navBtnBuilder'),
+        sdk: document.getElementById('navBtnSdk')
+      };
+
+      const isDebug = window.location.search.includes('debug=1');
+
+      Object.keys(tabs).forEach(k => {
+        if (k === tab) {
+          tabs[k].classList.remove('hidden');
+          tabs[k].classList.add(k === 'play' ? 'grid' : 'flex');
+          btns[k].className = 'btn-tactile btn-cream px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1';
+        } else {
+          tabs[k].classList.add('hidden');
+          tabs[k].classList.remove('grid', 'flex');
+          if (k === 'sdk' && !isDebug) {
+            btns[k].className = 'hidden';
+          } else {
+            btns[k].className = 'btn-tactile btn-stone px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1';
+          }
+        }
+      });
+
+      if (tab === 'levels') renderLevelSelectGrid();
+      if (tab === 'play') renderBoardCanvas();
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const box = document.getElementById('toastNotification');
+      const txt = document.getElementById('toastMessage');
+      if (!box || !txt) return;
+      txt.textContent = msg;
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        box.classList.add('hidden');
+        box.classList.remove('flex');
+      }, 3000);
+    }
+
+    window.onload = function () {
+      if (window.location.search.includes('debug=1')) {
+        const sdkBtn = document.getElementById('navBtnSdk');
+        if (sdkBtn) {
+          sdkBtn.classList.remove('hidden');
+          sdkBtn.classList.add('flex');
+        }
+      }
+      initAll100Levels();
+      updateTotalStarsHeader();
+      updateLivesHeader();
+      initCanvasEvents();
+      startLevel(1);
+      renderLevelSelectGrid();
+    };
+  </script>
+</body>
+</html>
